@@ -18,9 +18,25 @@ This repository owns **no assessment model content**. It provides the validation
 - `fixtures/` — positive + negative controls proving the validators can both pass and fail.
 - Self-test CI running the validators against the fixtures on every PR.
 
+## Phase 2 additions (current)
+
+- `scripts/resolve_contract.py` — Level 2 full: resolves a model's handshake against the **published contract suite** from a pinned dea-metamodel checkout. Family id must exist in the suite; declared version must be compatible (exact, `1.x` wildcard, `^1.0` caret, or `1`/`1.0` prefix of the published X.Y.Z).
+- `.github/workflows/contract-conformance.yml` — **reusable `workflow_call` workflow** for model repositories:
+
+  ```yaml
+  jobs:
+    contract-conformance:
+      uses: Assessment-Models/assessment-ci/.github/workflows/contract-conformance.yml@main
+      with:
+        dea-metamodel-ref: v1.0.0   # immutable tag or SHA — never main/latest
+        manifest-path: model.yaml   # optional
+  ```
+
+  It runs the full Level 2 chain: manifest schema + handshake shape, immutable-reference guard, and resolution against the contract suite at the caller's pin. The `dea-metamodel-ref` input is guarded — mutable refs fail the job.
+- Self-test CI resolves the fixtures against the **live** suite on `dea-metamodel@main` (positive + version-mismatch negative).
+
 ## Later phases
 
-- **Phase 2**: contract-version resolution against pinned dea-metamodel releases (reusable `workflow_call` workflow consumed by model repos).
 - **Phase 4**: Level 3 ecosystem validation wired to the registry's live population; all three levels demonstrated by the same first model (§31).
 - Cross-repo fan-out stays `workflow_dispatch`-only until the org-level dispatch credential exists (Phase 1 prerequisite, §13 note).
 

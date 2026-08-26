@@ -1,5 +1,16 @@
 # Changelog
 
+## [Unreleased] — CR-AM-11 Phase 2: contract-version resolution
+
+### Added
+- `scripts/resolve_contract.py` — resolves a model's contract handshake against the published contract suite (family id must exist; version compatibility: exact / `1.x` / `^1.0` / `1.0`-prefix). Never fetches — the caller supplies the pinned suite file.
+- `.github/workflows/contract-conformance.yml` — reusable `workflow_call` Level 2 workflow: immutable-ref guard on the dea-metamodel pin, manifest + handshake validation, immutable-reference check, and suite resolution.
+- `fixtures/invalid/version-mismatch.yaml` — negative control (declares 9.9 vs published 1.0).
+- Self-test CI gains the `resolve-contract` job: fixtures resolved against the live suite on `dea-metamodel@main` (positive passes, mismatch rejected).
+
+### Changed
+- Negative-control loop lists its fixtures explicitly (the version-mismatch fixture is a resolve-level negative, not a handshake-level one — a glob would have false-failed it).
+
 ## [Unreleased] — CR-AM-11 Phase 1: Integration spine (CI half)
 
 ### Added
