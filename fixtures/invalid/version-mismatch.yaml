@@ -1,0 +1,14 @@
+# Negative control for resolve_contract.py: the handshake names a valid
+# contract family but a version the pinned suite does not publish (9.9 vs 1.0).
+# resolve_contract.py MUST reject this fixture.
+id: digital-transformation-maturity-model
+type: maturity-model
+name: Digital Transformation Maturity Model
+version: 1.0.0
+conformance:
+  contract:
+    id: maturity-scale-contract
+  source:
+    organization: technehub-labs
+    repository: dea-metamodel
+  version: "9.9"

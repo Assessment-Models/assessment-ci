@@ -1,0 +1,78 @@
+# Reusable Level 2 contract-conformance workflow (CR-AM-11 Phase 2).
+#
+# Consumed by model repositories as:
+#
+#   jobs:
+#     contract-conformance:
+#       uses: Assessment-Models/assessment-ci/.github/workflows/contract-conformance.yml@v1
+#       with:
+#         dea-metamodel-ref: v1.0.0        # REQUIRED: immutable tag or 40-char SHA — never main/latest
+#         manifest-path: model.yaml        # optional, default model.yaml
+#
+# It checks out the caller's repository and the pinned dea-metamodel release,
+# then runs the Level 2 chain: manifest schema + handshake shape
+# (validate_handshake.py), immutable references (check_immutable_refs.py), and
+# resolution of the declared contract family + version against the published
+# contract suite at that pin (resolve_contract.py).
+name: Contract conformance (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      dea-metamodel-ref:
+        required: true
+        type: string
+        description: "Immutable dea-metamodel reference: tag vX.Y.Z or 40-char commit SHA. main/master/latest are rejected."
+      manifest-path:
+        required: false
+        type: string
+        default: model.yaml
+
+jobs:
+  conformance:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Guard — dea-metamodel-ref must be immutable
+        run: |
+          ref="${{ inputs.dea-metamodel-ref }}"
+          case "$ref" in
+            main|master|latest|HEAD|head)
+              echo "FAIL — dea-metamodel-ref '$ref' is mutable (CR-AM-11 section 12)"
+              exit 1 ;;
+          esac
+          if ! echo "$ref" | grep -qE '^v[0-9]+\.[0-9]+\.[0-9]+(-[a-z0-9.-]+)?$|^[0-9a-f]{40}$'; then
+            echo "FAIL — dea-metamodel-ref '$ref' is neither a vX.Y.Z tag nor a 40-char SHA"
+            exit 1
+          fi
+          echo "OK — immutable ref: $ref"
+
+      - uses: actions/checkout@v4
+        with:
+          path: caller
+
+      - name: Check out pinned dea-metamodel contract suite
+        uses: actions/checkout@v4
+        with:
+          repository: technehub-labs/dea-metamodel
+          ref: ${{ inputs.dea-metamodel-ref }}
+          path: dea-metamodel
+
+      - name: Check out assessment-ci validators
+        uses: actions/checkout@v4
+        with:
+          repository: Assessment-Models/assessment-ci
+          ref: main
+          path: assessment-ci
+
+      - name: Install validator dependencies
+        run: pip install pyyaml jsonschema
+
+      - name: Level 2 basic — manifest + handshake shape
+        run: |
+          python assessment-ci/scripts/validate_handshake.py "caller/${{ inputs.manifest-path }}"
+          python assessment-ci/scripts/check_immutable_refs.py "caller/${{ inputs.manifest-path }}"
+
+      - name: Level 2 full — resolve handshake against the pinned contract suite
+        run: |
+          python assessment-ci/scripts/resolve_contract.py "caller/${{ inputs.manifest-path }}" \
+            --suite dea-metamodel/assessment-models/contracts/contract-suite.yaml

@@ -21,7 +21,7 @@ jobs:
       - name: Negative controls — invalid fixtures must each fail
         run: |
           set -e
-          for f in fixtures/invalid/*.yaml; do
+          for f in fixtures/invalid/unknown-contract-id.yaml fixtures/invalid/mutable-component-reference.yaml fixtures/invalid/missing-handshake.yaml; do
             echo "--- $f"
             if python scripts/validate_handshake.py "$f" && python scripts/check_immutable_refs.py "$f"; then
               echo "FAIL — $f passed but is a negative control"
@@ -30,3 +30,30 @@ jobs:
               echo "OK — $f rejected as expected"
             fi
           done
+
+  # CR-AM-11 Phase 2 — resolution against the real published contract suite.
+  resolve-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check out dea-metamodel (contract suite source of truth)
+        uses: actions/checkout@v4
+        with:
+          repository: technehub-labs/dea-metamodel
+          ref: main
+          path: dea-metamodel
+      - name: Install pyyaml
+        run: pip install pyyaml
+      - name: Positive — valid manifest resolves against the live suite
+        run: |
+          python scripts/resolve_contract.py fixtures/valid/model.yaml \
+            --suite dea-metamodel/assessment-models/contracts/contract-suite.yaml
+      - name: Negative — version mismatch must be rejected
+        run: |
+          if python scripts/resolve_contract.py fixtures/invalid/version-mismatch.yaml \
+              --suite dea-metamodel/assessment-models/contracts/contract-suite.yaml; then
+            echo "FAIL — version-mismatch fixture resolved but must not"
+            exit 1
+          else
+            echo "OK — version mismatch rejected as expected"
+          fi
