@@ -1,0 +1,13 @@
+# Negative control: handshake names a non-existent contract family.
+# validate_handshake.py MUST reject this fixture.
+id: digital-transformation-maturity-model
+type: maturity-model
+name: Digital Transformation Maturity Model
+version: 1.0.0
+conformance:
+  contract:
+    id: opendea-assesment-metamodel
+  source:
+    organization: technehub-labs
+    repository: dea-metamodel
+  version: "1.0"

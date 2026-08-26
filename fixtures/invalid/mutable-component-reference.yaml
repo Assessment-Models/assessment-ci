@@ -1,0 +1,21 @@
+# Negative control: component reference pins a mutable branch ref.
+# check_immutable_refs.py MUST reject this fixture (CR-AM-11 section 12/20).
+id: digital-transformation-maturity-model
+type: maturity-model
+name: Digital Transformation Maturity Model
+version: 1.0.0
+conformance:
+  contract:
+    id: opendea-assessment-metamodel
+  source:
+    organization: technehub-labs
+    repository: dea-metamodel
+  version: "1.0"
+components:
+  - id: digital-culture
+    type: sub-dimension
+    kind: import
+    source:
+      repository: Assessment-Models/maturity-components
+    version: 1.2.0
+    reference: main

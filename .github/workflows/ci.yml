@@ -1,0 +1,32 @@
+name: assessment-ci self-test
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  self-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install validator dependencies
+        run: pip install pyyaml jsonschema
+
+      - name: Positive control — valid manifest passes both validators
+        run: |
+          python scripts/validate_handshake.py fixtures/valid/model.yaml
+          python scripts/check_immutable_refs.py fixtures/valid/model.yaml
+
+      - name: Negative controls — invalid fixtures must each fail
+        run: |
+          set -e
+          for f in fixtures/invalid/*.yaml; do
+            echo "--- $f"
+            if python scripts/validate_handshake.py "$f" && python scripts/check_immutable_refs.py "$f"; then
+              echo "FAIL — $f passed but is a negative control"
+              exit 1
+            else
+              echo "OK — $f rejected as expected"
+            fi
+          done
