@@ -1,0 +1,6 @@
+# Negative control: no conformance block at all (schema-level failure).
+# validate_handshake.py MUST reject this fixture (missing required 'conformance').
+id: digital-transformation-maturity-model
+type: maturity-model
+name: Digital Transformation Maturity Model
+version: 1.0.0
