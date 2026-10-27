@@ -35,9 +35,15 @@ This repository owns **no assessment model content**. It provides the validation
   It runs the full Level 2 chain: manifest schema + handshake shape, immutable-reference guard, and resolution against the contract suite at the caller's pin. The `dea-metamodel-ref` input is guarded — mutable refs fail the job.
 - Self-test CI resolves the fixtures against the **live** suite on `dea-metamodel@main` (positive + version-mismatch negative).
 
+## Phase 4 additions (current)
+
+- `scripts/validate_ecosystem.py` — Level 3 full: validates the registry's live population — immutable release refs, dependency ids resolve to registered assets, and manifest coherence (each asset's `model.yaml` at its pinned release must agree with its registration record on id, type, version, and contract handshake). Assets without a `model.yaml` (legacy catalogs/umbrellas) are reported as informational.
+- `validate-ecosystem` self-test job — checks out `Assessment-Models/assessment-registry@main` and runs Level 3 validation against the live population on every PR.
+- Cross-repo fan-out stays `workflow_dispatch`-only until the org-level dispatch credential exists (Phase 1 prerequisite, §13 note).
+
 ## Later phases
 
-- **Phase 4**: Level 3 ecosystem validation wired to the registry's live population; all three levels demonstrated by the same first model (§31).
+- Cross-repo fan-out: trigger ecosystem CI in every registered model repo on registry changes, once the org-level dispatch credential exists.
 - Cross-repo fan-out stays `workflow_dispatch`-only until the org-level dispatch credential exists (Phase 1 prerequisite, §13 note).
 
 ---
