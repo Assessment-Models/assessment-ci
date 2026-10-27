@@ -59,11 +59,21 @@ jobs:
           repository: Assessment-Models/assessment-registry
           ref: main
           path: assessment-registry
+      - name: Resolve tools-umbrella ref (companion branch if it exists, else main)
+        id: toolsref
+        run: |
+          if git ls-remote --exit-code --heads \
+              https://github.com/Assessment-Models/dea-catalog-assessment-tools \
+              "${GITHUB_HEAD_REF:-main}" >/dev/null 2>&1; then
+            echo "ref=${GITHUB_HEAD_REF:-main}" >> "$GITHUB_OUTPUT"
+          else
+            echo "ref=main" >> "$GITHUB_OUTPUT"
+          fi
       - name: Check out dea-catalog-assessment-tools (index view)
         uses: actions/checkout@v4
         with:
           repository: Assessment-Models/dea-catalog-assessment-tools
-          ref: main
+          ref: ${{ steps.toolsref.outputs.ref }}
           path: tools
       - name: Install pyyaml
         run: pip install pyyaml
