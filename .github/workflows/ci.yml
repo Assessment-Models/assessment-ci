@@ -31,6 +31,23 @@ jobs:
             fi
           done
 
+  # CR-AM-11 Phase 4 — Level 3 ecosystem validation against the live registry.
+  validate-ecosystem:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check out assessment-registry (live population)
+        uses: actions/checkout@v4
+        with:
+          repository: Assessment-Models/assessment-registry
+          ref: main
+          path: assessment-registry
+      - name: Install pyyaml
+        run: pip install pyyaml
+      - name: Level 3 — registry population coherence
+        run: |
+          python scripts/validate_ecosystem.py --registry assessment-registry
+
   # CR-AM-11 Phase 2 — resolution against the real published contract suite.
   resolve-contract:
     runs-on: ubuntu-latest

@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased] — CR-AM-11 Phase 4: Level 3 ecosystem validation
+
+### Added
+- `scripts/validate_ecosystem.py` — Level 3 validation against the registry's live population: immutable release refs, dependency-id resolution, and manifest coherence (registered id/type/version/contract vs the asset's own `model.yaml` at the pinned release). Assets without a `model.yaml` are informational, not failures.
+- `validate-ecosystem` self-test job — checks out `assessment-registry@main` and runs the validator on every PR.
+
 ## [Unreleased] — CR-AM-11 Phase 2: contract-version resolution
 
 ### Added
