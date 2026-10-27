@@ -48,6 +48,32 @@ jobs:
         run: |
           python scripts/validate_ecosystem.py --registry assessment-registry
 
+  # D-4b — the legacy catalog index view must match the registry population.
+  catalog-view-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check out assessment-registry
+        uses: actions/checkout@v4
+        with:
+          repository: Assessment-Models/assessment-registry
+          ref: main
+          path: assessment-registry
+      - name: Check out dea-catalog-assessment-tools (index view)
+        uses: actions/checkout@v4
+        with:
+          repository: Assessment-Models/dea-catalog-assessment-tools
+          ref: main
+          path: tools
+      - name: Install pyyaml
+        run: pip install pyyaml
+      - name: Index domains must match the registry
+        run: |
+          python scripts/generate_catalog_view.py \
+            --registry assessment-registry \
+            --index tools/assessments/index.yaml \
+            --check
+
   # CR-AM-11 Phase 2 — resolution against the real published contract suite.
   resolve-contract:
     runs-on: ubuntu-latest
