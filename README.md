@@ -41,6 +41,10 @@ This repository owns **no assessment model content**. It provides the validation
 - `validate-ecosystem` self-test job — checks out `Assessment-Models/assessment-registry@main` and runs Level 3 validation against the live population on every PR.
 - Cross-repo fan-out stays `workflow_dispatch`-only until the org-level dispatch credential exists (Phase 1 prerequisite, §13 note).
 
+## Nightly ecosystem health (M-5)
+
+The self-test suite (including `validate-ecosystem` and `catalog-view-check`) also runs on a nightly schedule and via `workflow_dispatch`. Cross-repo drift that slips through PR windows — a force-pushed tag, an out-of-band registry change — surfaces within a day instead of at the next unrelated PR. Schedule runs also publish nothing and mutate nothing: they are read-only guards.
+
 ## Later phases
 
 - Cross-repo fan-out: trigger ecosystem CI in every registered model repo on registry changes, once the org-level dispatch credential exists.

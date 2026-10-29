@@ -4,6 +4,12 @@ on:
   pull_request:
   push:
     branches: [main]
+  schedule:
+    # Nightly ecosystem health (M-5): drift that slips through PR windows —
+    # e.g. a force-pushed tag, an out-of-band registry change — is caught
+    # within a day instead of at the next unrelated PR.
+    - cron: '0 3 * * *'
+  workflow_dispatch:
 
 jobs:
   self-test:
