@@ -1,15 +1,7 @@
-# Reusable Level 2 contract-conformance workflow (CR-AM-11 Phase 2).
+# Reusable Level 2 contract-conformance workflow (CR-AM-11 §14).
 #
-# Consumed by model repositories as:
-#
-#   jobs:
-#     contract-conformance:
-#       uses: Assessment-Models/assessment-ci/.github/workflows/contract-conformance.yml@v1
-#       with:
-#         dea-metamodel-ref: v1.0.0
-#         manifest-path: model.yaml
-#
-# Both validator source and the contract suite are checked out at immutable refs.
+# The caller's immutable dea-metamodel reference supplies both the contract
+# suite and the maturity-touchpoint structural schema.
 name: Contract conformance (reusable)
 
 on:
@@ -18,7 +10,7 @@ on:
       dea-metamodel-ref:
         required: true
         type: string
-        description: "Immutable dea-metamodel reference: tag vX.Y.Z or 40-char commit SHA. main/master/latest are rejected."
+        description: "Immutable dea-metamodel reference: tag vX.Y.Z or 40-char SHA. Mutable refs are rejected."
       manifest-path:
         required: false
         type: string
@@ -27,7 +19,7 @@ on:
         required: false
         type: string
         default: 9c0fb2596f5a2d3bd0b33787feed1ef5861c909a
-        description: "Immutable assessment-ci validator source commit (40-char SHA)."
+        description: "Immutable assessment-ci validator source commit (40-character SHA)."
 
 jobs:
   conformance:
@@ -53,7 +45,7 @@ jobs:
         with:
           path: caller
 
-      - name: Check out pinned dea-metamodel contract suite
+      - name: Check out pinned dea-metamodel contract suite and schemas
         uses: actions/checkout@v4
         with:
           repository: technehub-labs/dea-metamodel
@@ -65,7 +57,7 @@ jobs:
         run: |
           ref="${{ inputs.assessment-ci-ref }}"
           if ! echo "$ref" | grep -qE '^[0-9a-f]{40}$'; then
-            echo "FAIL — assessment-ci-ref '$ref' is not a 40-char commit SHA"
+            echo "FAIL — assessment-ci-ref '$ref' is not a 40-character commit SHA"
             exit 1
           fi
           echo "OK — immutable assessment-ci ref: $ref"
@@ -86,6 +78,7 @@ jobs:
           python assessment-ci/scripts/check_immutable_refs.py "caller/${{ inputs.manifest-path }}"
 
       - name: Level 2 full — resolve handshake against the pinned contract suite
-        run: |
-          python assessment-ci/scripts/resolve_contract.py "caller/${{ inputs.manifest-path }}" \
-            --suite dea-metamodel/assessment-models/contracts/contract-suite.yaml
+        run: python assessment-ci/scripts/resolve_contract.py "caller/${{ inputs.manifest-path }}" --suite dea-metamodel/assessment-models/contracts/contract-suite.yaml
+
+      - name: Level 2 touchpoints — validate optional declaration against the pinned schema
+        run: python assessment-ci/scripts/validate_touchpoints.py "caller/${{ inputs.manifest-path }}" --schema dea-metamodel/assessment-models/schemas/maturity-touchpoints.schema.json --suite dea-metamodel/assessment-models/contracts/contract-suite.yaml
