@@ -1,3 +1,5 @@
+# Changelog
+
 ## [Unreleased] — CR-AM-21: Level 2 touchpoint structural conformance
 
 ### Added
