@@ -27,6 +27,11 @@ on:
         required: false
         type: string
         default: model.yaml
+      assessment-ci-ref:
+        required: false
+        type: string
+        default: 9c0fb2596f5a2d3bd0b33787feed1ef5861c909a
+        description: "Immutable assessment-ci validator source commit (40-char SHA)."
 
 jobs:
   conformance:
@@ -57,11 +62,33 @@ jobs:
           ref: ${{ inputs.dea-metamodel-ref }}
           path: dea-metamodel
 
-      - name: Check out assessment-ci validators
+      - name: Guard — assessment-ci-ref must be immutable
+        run: |
+          ref="${{ inputs.assessment-ci-ref }}"
+          if ! echo "$ref" | grep -qE '^[0-9a-f]{40}
+      - name: Install validator dependencies
+        run: pip install pyyaml jsonschema
+
+      - name: Level 2 basic — manifest + handshake shape
+        run: |
+          python assessment-ci/scripts/validate_handshake.py "caller/${{ inputs.manifest-path }}"
+          python assessment-ci/scripts/check_immutable_refs.py "caller/${{ inputs.manifest-path }}"
+
+      - name: Level 2 full — resolve handshake against the pinned contract suite
+        run: |
+          python assessment-ci/scripts/resolve_contract.py "caller/${{ inputs.manifest-path }}" \
+            --suite dea-metamodel/assessment-models/contracts/contract-suite.yaml
+; then
+            echo "FAIL — assessment-ci-ref '$ref' is not a 40-char commit SHA"
+            exit 1
+          fi
+          echo "OK — immutable assessment-ci ref: $ref"
+
+      - name: Check out pinned assessment-ci validators
         uses: actions/checkout@v4
         with:
           repository: Assessment-Models/assessment-ci
-          ref: main
+          ref: ${{ inputs.assessment-ci-ref }}
           path: assessment-ci
 
       - name: Install validator dependencies
