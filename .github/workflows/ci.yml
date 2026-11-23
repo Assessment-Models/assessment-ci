@@ -124,7 +124,7 @@ jobs:
       - name: Positive — valid touchpoint declaration validates structurally
         run: python scripts/validate_touchpoints.py fixtures/valid/touchpoints-model.yaml --schema dea-metamodel/assessment-models/schemas/maturity-touchpoints.schema.json --suite dea-metamodel/assessment-models/contracts/contract-suite.yaml
       - name: Positive — models without touchpoints remain valid
-        run: python scripts/validate_touchpoints.py fixtures/valid/model.yaml --schema dea-metamodel/assessment-models/schemas/maturity-touchpoints.schema.json --suite dea-metamodel/assessment-models/contracts/contract-suite.yaml
+        run: python scripts/validate_touchpoints.py fixtures/valid/no-touchpoints/model.yaml --schema dea-metamodel/assessment-models/schemas/maturity-touchpoints.schema.json --suite dea-metamodel/assessment-models/contracts/contract-suite.yaml
       - name: Negative — touchpoint contract violations must be rejected
         run: |
           set -e
