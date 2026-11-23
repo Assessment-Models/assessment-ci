@@ -1,7 +1,7 @@
 # Reusable Level 2 contract-conformance workflow (CR-AM-11 §14).
 #
-# The caller's immutable dea-metamodel reference supplies both the contract
-# suite and the maturity-touchpoint structural schema.
+# The caller's immutable dea-metamodel reference supplies the contract suite
+# and touchpoint schema. The caller must independently pin the validator source.
 name: Contract conformance (reusable)
 
 on:
@@ -16,9 +16,8 @@ on:
         type: string
         default: model.yaml
       assessment-ci-ref:
-        required: false
+        required: true
         type: string
-        default: 9c0fb2596f5a2d3bd0b33787feed1ef5861c909a
         description: "Immutable assessment-ci validator source commit (40-character SHA)."
 
 jobs:
