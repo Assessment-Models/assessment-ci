@@ -9,7 +9,7 @@
 - The reusable Level 2 workflow invokes touchpoint structural validation when the caller supplies an immutable `assessment-ci-ref` containing the new validator. Existing callers that omit this optional input retain the legacy pinned validator baseline during the staged consumer migration.
 
 ### Preserved
-- Touchpoint declarations remain optional.
+- Touchpoint declarations remain optional for models without a touchpoint artifact. If the conventional root `touchpoints.yaml` exists, `model.yaml` must declare it; this prevents silent validation bypass.
 - Existing model relationships and criterion mappings are not modified.
 - Structural validation does not claim peer existence, criterion resolution or reciprocal endpoint conformance; those remain Level 3 responsibilities under issue #9.
 
