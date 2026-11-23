@@ -81,3 +81,6 @@ jobs:
 
       - name: Level 2 touchpoints — validate optional declaration against the pinned schema
         run: python assessment-ci/scripts/validate_touchpoints.py "caller/${{ inputs.manifest-path }}" --schema dea-metamodel/assessment-models/schemas/maturity-touchpoints.schema.json --suite dea-metamodel/assessment-models/contracts/contract-suite.yaml
+
+      - name: Level 2 touchpoints — validate optional declaration against the pinned schema
+        run: python assessment-ci/scripts/validate_touchpoints.py "caller/${{ inputs.manifest-path }}" --schema dea-metamodel/assessment-models/schemas/maturity-touchpoints.schema.json --suite dea-metamodel/assessment-models/contracts/contract-suite.yaml
