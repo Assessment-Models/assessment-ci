@@ -1,0 +1,3 @@
+# Fixture target proving that the declaration resolves to a repository file.
+# Touchpoint relationship semantics are validated under their dedicated contract.
+id: fixture-touchpoints
