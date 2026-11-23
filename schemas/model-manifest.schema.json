@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://assessment-models.github.io/assessment-ci/schemas/model-manifest.schema.json",
   "title": "Model Repository Manifest (model.yaml)",
-  "description": "Root manifest every Assessment-Models model repository carries (CR-AM-11 section 22): identity, version, contract dependency, components, dependencies, compatibility.",
+  "description": "Root model.yaml manifest contract (CR-AM-11 section 22): identity, contract handshake, components, dependencies, compatibility and typed optional declarations for separately governed model artifacts.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -203,6 +203,22 @@
               }
             }
           }
+        }
+      }
+    },
+    "touchpoints": {
+      "type": "object",
+      "description": "Optional declaration of the model's separately governed Handshake & Touchpoint Model artifact. This preserves relationship declarations as a first-class repository artifact; it is not a replacement for the touchpoint record contract.",
+      "additionalProperties": false,
+      "required": [
+        "declaration"
+      ],
+      "properties": {
+        "declaration": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))[A-Za-z0-9._/-]+\\.ya?ml$",
+          "description": "Repository-relative YAML path to the model's touchpoint declaration file. Absolute paths and parent-directory traversal are prohibited; Level 2 verifies that the file exists."
         }
       }
     }
