@@ -30,11 +30,11 @@ This repository owns **no assessment model content**. It provides the validation
       uses: Assessment-Models/assessment-ci/.github/workflows/contract-conformance.yml@<immutable-sha>
       with:
         dea-metamodel-ref: v0.1.0-draft   # immutable contract/schema release
-        assessment-ci-ref: <40-character-sha> # immutable validator source
+        assessment-ci-ref: <40-character-sha> # optional; required to enable new touchpoint validation
         manifest-path: model.yaml   # optional
   ```
 
-  It runs the full Level 2 chain: manifest schema + handshake shape, immutable-reference guard, root handshake resolution, and touchpoint structural validation against the schema and suite at the caller's pinned `dea-metamodel-ref`. Both source references are guarded — mutable refs fail the job.
+  It runs the full Level 2 chain: manifest schema + handshake shape, immutable-reference guard, root handshake resolution, and touchpoint structural validation against the schema and suite at the caller's pinned `dea-metamodel-ref`. The `dea-metamodel-ref` is always guarded. The optional `assessment-ci-ref` is also guarded when supplied; callers that supply a validator commit containing `validate_touchpoints.py` enable the new structural check. Existing callers that omit it retain the legacy pinned validator path until they are migrated.
 - Self-test CI resolves the fixtures against the immutable `dea-metamodel@v0.1.0-draft` suite, including positive and negative touchpoint structural cases.
 
 ## Phase 4 additions (current)
