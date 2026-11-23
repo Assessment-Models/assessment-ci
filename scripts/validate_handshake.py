@@ -10,6 +10,8 @@ Checks:
      (CR-AM-11 Annex A inventory) — typos in the contract id are caught here
   3. The handshake source is the canonical engineering authority
      (technehub-labs/dea-metamodel)
+  4. An optional touchpoint declaration is a safe repository-relative YAML path
+     and resolves to an existing file; its record semantics remain separate
 
 Exit 0 with OK when valid; exit 1 listing every failure otherwise.
 """
@@ -104,7 +106,7 @@ def main() -> int:
         for e in errors:
             print(f"  - {e}")
         return 1
-    print(f"OK — {path}: manifest valid, handshake names a known contract family from the canonical source")
+    print(f"OK — {path}: manifest, handshake and optional touchpoint declaration valid")
     return 0
 
 
