@@ -36,7 +36,7 @@ jobs:
       - name: Guard — dea-metamodel-ref must be immutable
         shell: bash
         run: |
-          ref="\${{ inputs.dea-metamodel-ref }}"
+          ref="${{ inputs.dea-metamodel-ref }}"
           case "$ref" in
             main|master|latest|HEAD|head)
               echo "FAIL — dea-metamodel-ref '$ref' is mutable (CR-AM-11 section 12)"
@@ -57,13 +57,13 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: technehub-labs/dea-metamodel
-          ref: \${{ inputs.dea-metamodel-ref }}
+          ref: ${{ inputs.dea-metamodel-ref }}
           path: dea-metamodel
 
       - name: Guard — assessment-ci-ref must be immutable
         shell: bash
         run: |
-          ref="\${{ inputs.assessment-ci-ref }}"
+          ref="${{ inputs.assessment-ci-ref }}"
           if ! echo "$ref" | grep -qE '^[0-9a-f]{40}$'; then
             echo "FAIL — assessment-ci-ref '$ref' is not a 40-char commit SHA"
             exit 1
@@ -74,7 +74,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: Assessment-Models/assessment-ci
-          ref: \${{ inputs.assessment-ci-ref }}
+          ref: ${{ inputs.assessment-ci-ref }}
           path: assessment-ci
 
       - name: Install validator dependencies
@@ -82,10 +82,10 @@ jobs:
 
       - name: Level 2 basic — manifest + handshake shape
         run: |
-          python assessment-ci/scripts/validate_handshake.py "caller/\${{ inputs.manifest-path }}"
-          python assessment-ci/scripts/check_immutable_refs.py "caller/\${{ inputs.manifest-path }}"
+          python assessment-ci/scripts/validate_handshake.py "caller/${{ inputs.manifest-path }}"
+          python assessment-ci/scripts/check_immutable_refs.py "caller/${{ inputs.manifest-path }}"
 
       - name: Level 2 full — resolve handshake against the pinned contract suite
         run: |
-          python assessment-ci/scripts/resolve_contract.py "caller/\${{ inputs.manifest-path }}" \
+          python assessment-ci/scripts/resolve_contract.py "caller/${{ inputs.manifest-path }}" \
             --suite dea-metamodel/assessment-models/contracts/contract-suite.yaml
