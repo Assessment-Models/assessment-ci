@@ -1,5 +1,18 @@
 # Changelog
 
+## [Unreleased] — CR-AM-20: Typed touchpoint declarations in model manifests
+
+### Added
+- Optional `touchpoints.declaration` to the shared model-manifest schema. The declaration is a repository-relative YAML path to a separately governed relationship artifact; it is not free-form metadata and does not replace the dedicated touchpoint record contract.
+- Level 2 validation of declaration path safety and target-file existence. Absolute paths, parent-directory traversal, non-YAML paths and missing targets are rejected.
+- Positive and negative fixtures covering models with and without touchpoint declarations, missing targets, absolute paths and parent traversal.
+- Self-test CI coverage for the new positive and negative controls.
+
+### Preserved
+- Existing model touchpoint artifacts, peer relationships, directional mappings, criterion mappings, overlap-resolution statements and reciprocity requirements.
+- The touchpoint declaration remains optional for models that do not publish such an artifact.
+- The published touchpoint record schema, contract version and immutable dea-metamodel pin are unchanged.
+
 ## [Unreleased] — CR-AM-11 Phase 4: Level 3 ecosystem validation
 
 ### Added

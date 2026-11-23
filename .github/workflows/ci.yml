@@ -23,11 +23,13 @@ jobs:
         run: |
           python scripts/validate_handshake.py fixtures/valid/model.yaml
           python scripts/check_immutable_refs.py fixtures/valid/model.yaml
+          python scripts/validate_handshake.py fixtures/valid/touchpoints-model.yaml
+          python scripts/check_immutable_refs.py fixtures/valid/touchpoints-model.yaml
 
       - name: Negative controls — invalid fixtures must each fail
         run: |
           set -e
-          for f in fixtures/invalid/unknown-contract-id.yaml fixtures/invalid/mutable-component-reference.yaml fixtures/invalid/missing-handshake.yaml; do
+          for f in fixtures/invalid/unknown-contract-id.yaml fixtures/invalid/mutable-component-reference.yaml fixtures/invalid/missing-handshake.yaml fixtures/invalid/missing-touchpoints-target.yaml fixtures/invalid/absolute-touchpoints-path.yaml fixtures/invalid/traversal-touchpoints-path.yaml; do
             echo "--- $f"
             if python scripts/validate_handshake.py "$f" && python scripts/check_immutable_refs.py "$f"; then
               echo "FAIL — $f passed but is a negative control"

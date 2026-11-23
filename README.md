@@ -12,8 +12,8 @@ This repository owns **no assessment model content**. It provides the validation
 
 ## Phase 1 scope (current)
 
-- `schemas/model-manifest.schema.json` — the root `model.yaml` manifest contract (§22): identity, version, contract handshake, components, dependencies, compatibility (§15/§17).
-- `scripts/validate_handshake.py` — Level 2 basic: validate a model repository's `model.yaml` against the manifest schema + verify the handshake names a known contract family (Annex A inventory).
+- `schemas/model-manifest.schema.json` — the root `model.yaml` manifest contract (§22): identity, version, contract handshake, components, dependencies, compatibility (§15/§17), and typed optional declarations for separately governed artifacts such as `touchpoints.yaml`.
+- `scripts/validate_handshake.py` — Level 2 basic: validate `model.yaml` against the manifest schema, verify the handshake names a known contract family (Annex A inventory), and validate that an optional touchpoint declaration is a safe repository-relative YAML path to an existing file. Touchpoint record semantics remain governed by the dedicated touchpoint contract and ecosystem validation.
 - `scripts/check_immutable_refs.py` — reusable guard: every external reference in a manifest (components, dependencies) must be immutable (tag `vX.Y.Z`, commit SHA, or digest — never `main`/`latest`).
 - `fixtures/` — positive + negative controls proving the validators can both pass and fail.
 - Self-test CI running the validators against the fixtures on every PR.
