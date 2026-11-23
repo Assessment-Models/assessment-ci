@@ -1,4 +1,4 @@
-# assessment-ci
+# Assessment's Continuous Integration (Automation Pipeline)
 
 **Cross-repository validation and ecosystem integration logic for the Assessment-Models ecosystem** (CR-AM-11 §13).
 
