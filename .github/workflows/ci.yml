@@ -105,8 +105,8 @@ jobs:
           repository: technehub-labs/dea-metamodel
           ref: v0.1.0-draft
           path: dea-metamodel
-      - name: Install pyyaml
-        run: pip install pyyaml
+      - name: Install pyyaml + jsonschema
+        run: pip install pyyaml jsonschema
       - name: Positive — valid manifest resolves against the live suite
         run: |
           python scripts/resolve_contract.py fixtures/valid/model.yaml \
