@@ -1,23 +1,24 @@
-# Changelog
-
 ## [Unreleased] — CR-AM-21: Level 2 touchpoint structural conformance
 
 ### Added
-- `scripts/validate_touchpoints.py` validates each declared touchpoint artifact against the maturity-touchpoint schema and contract suite supplied by the caller's immutable dea-metamodel reference.
+- `scripts/validate_touchpoints.py` validates each declared touchpoint artifact against the schema and contract suite supplied by the caller's immutable dea-metamodel reference.
 - Level 2 verifies the touchpoint contract family/version pin and confirms the declaration's `repo_id` matches the root model identity.
-- Positive and negative fixtures cover valid declarations, optional absence, incomplete mirror pairs, invalid reciprocity vocabulary and contract-version mismatch.
-- Reusable contract-conformance workflow invokes touchpoint structural validation after checking out the pinned metamodel suite and validator source.
+- Positive and negative fixtures and unit tests cover optional declarations, valid records, incomplete mirror pairs, invalid reciprocity vocabulary and contract-version mismatch.
+- The reusable Level 2 workflow invokes touchpoint structural validation after checking out the pinned metamodel schema/suite and validator source.
 
 ### Preserved
 - Touchpoint declarations remain optional.
-- Existing peer relationships and criterion mappings are not modified.
+- Existing model relationships and criterion mappings are not modified.
 - Structural validation does not claim peer existence, criterion resolution or reciprocal endpoint conformance; those remain Level 3 responsibilities under issue #9.
+
+# Changelog
 
 ## [Unreleased] — Immutable validator source pin
 
 ### Changed
 - The reusable Level 2 workflow accepts an optional `assessment-ci-ref` input, defaults it to a 40-character commit SHA, rejects mutable or non-SHA values, and checks out validators from that immutable commit rather than `main`.
 - The independently pinned `dea-metamodel-ref` remains unchanged and continues to select the contract suite source.
+
 
 ## [Unreleased] — CR-AM-20: Typed touchpoint declarations in model manifests
 
@@ -42,5 +43,18 @@
 
 ### Added
 - `scripts/resolve_contract.py` — resolves a model's contract handshake against the published contract suite (family id must exist; version compatibility: exact / `1.x` / `^1.0` / `1.0`-prefix). Never fetches — the caller supplies the pinned suite file.
-- `.github/workflows/contract-conformance.yml` — reusable `workflow_call` Level 2 workflow: immutable-ref guard on the dea-metamodel source and contract-suite resolution.
+- `.github/workflows/contract-conformance.yml` — reusable `workflow_call` Level 2 workflow: immutable-ref guard on the dea-metamodel pin, manifest + handshake validation, immutable-reference check, and suite resolution.
+- `fixtures/invalid/version-mismatch.yaml` — negative control (declares 9.9 vs published 1.0).
+- Self-test CI gains the `resolve-contract` job: fixtures resolved against the live suite on `dea-metamodel@main` (positive passes, mismatch rejected).
 
+### Changed
+- Negative-control loop lists its fixtures explicitly (the version-mismatch fixture is a resolve-level negative, not a handshake-level one — a glob would have false-failed it).
+
+## [Unreleased] — CR-AM-11 Phase 1: Integration spine (CI half)
+
+### Added
+- Repository scaffold (CR-AM-11 §13): validation machinery only, no model content.
+- `schemas/model-manifest.schema.json` — the root `model.yaml` contract (§22) including the §15 contract handshake, §20 component references (kind: import/extend/override), and §17 compatibility declarations.
+- `scripts/validate_handshake.py` — Level 2 basic: manifest schema validation + known-contract-family check (Annex A inventory) + canonical-source check.
+- `scripts/check_immutable_refs.py` — reusable immutable-reference guard (rejects `main`/`master`/`latest`/`HEAD`).
+- `fixtures/` positive + negative controls; self-test CI asserts the valid fixture passes and every invalid fixture is rejected.
