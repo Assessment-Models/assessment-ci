@@ -92,6 +92,13 @@ class ValidateTouchpointsTests(unittest.TestCase):
         self.assertEqual(errors, [])
         self.assertTrue(skipped)
 
+    def test_existing_touchpoints_file_requires_declaration(self):
+        self.write_manifest()
+        self.write_touchpoints()
+        errors, skipped = validate_manifest_touchpoints(self.manifest, self.schema, self.suite)
+        self.assertFalse(skipped)
+        self.assertTrue(any("does not declare" in error for error in errors))
+
     def test_valid_declaration_passes(self):
         self.write_manifest("touchpoints.yaml")
         self.write_touchpoints()
