@@ -16,7 +16,7 @@ Exit 0 with OK when valid; exit 1 listing every failure otherwise.
 from __future__ import annotations
 
 import sys
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 import jsonschema
 import yaml
@@ -46,6 +46,36 @@ def main() -> int:
     path = Path(sys.argv[1])
     errors: list[str] = []
     doc = yaml.safe_load(path.read_text())
+
+    # Optional relationship-artifact declaration. The manifest schema checks
+    # its shape; this check ensures the repository-relative target is safe and
+    # exists. Touchpoint record semantics remain governed by their own contract
+    # and ecosystem validation, not by free-form manifest metadata.
+    touchpoints = (doc or {}).get("touchpoints") if isinstance(doc, dict) else None
+    if touchpoints is not None:
+        declaration = touchpoints.get("declaration") if isinstance(touchpoints, dict) else None
+        if not isinstance(declaration, str) or not declaration.strip():
+            errors.append("touchpoints: declaration must be a non-empty repository-relative YAML path")
+        else:
+            relative = PurePosixPath(declaration)
+            if (
+                relative.is_absolute()
+                or "\\" in declaration
+                or ".." in relative.parts
+                or relative.suffix.lower() not in {".yaml", ".yml"}
+                or not relative.parts
+            ):
+                errors.append("touchpoints: declaration must be a safe repository-relative YAML path (no absolute path or parent traversal)")
+            else:
+                repository_root = path.resolve().parent
+                target = (repository_root / Path(*relative.parts)).resolve()
+                try:
+                    target.relative_to(repository_root)
+                except ValueError:
+                    errors.append("touchpoints: declaration resolves outside the model repository")
+                else:
+                    if not target.is_file():
+                        errors.append(f"touchpoints: declared file does not exist: {declaration}")
 
     for err in sorted(
         jsonschema.Draft202012Validator(SCHEMA).iter_errors(doc),
