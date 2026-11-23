@@ -1,5 +1,12 @@
 # Changelog
 
+## [Unreleased] — Immutable validator source pin
+
+### Changed
+- The reusable Level 2 workflow accepts an optional `assessment-ci-ref` input, defaults it to a 40-character commit SHA, rejects mutable or non-SHA values, and checks out validators from that immutable commit rather than `main`.
+- The independently pinned `dea-metamodel-ref` remains unchanged and continues to select the contract suite source.
+
+
 ## [Unreleased] — CR-AM-20: Typed touchpoint declarations in model manifests
 
 ### Added
