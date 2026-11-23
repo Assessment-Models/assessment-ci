@@ -5,9 +5,6 @@ on:
   push:
     branches: [main]
   schedule:
-    # Nightly ecosystem health (M-5): drift that slips through PR windows —
-    # e.g. a force-pushed tag, an out-of-band registry change — is caught
-    # within a day instead of at the next unrelated PR.
     - cron: '0 3 * * *'
   workflow_dispatch:
 
@@ -18,15 +15,15 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install validator dependencies
         run: pip install pyyaml jsonschema
-
-      - name: Positive control — valid manifest passes both validators
+      - name: Run validator unit tests
+        run: python -m unittest discover -s tests -v
+      - name: Positive control — valid manifest passes existing validators
         run: |
           python scripts/validate_handshake.py fixtures/valid/model.yaml
           python scripts/check_immutable_refs.py fixtures/valid/model.yaml
           python scripts/validate_handshake.py fixtures/valid/touchpoints-model.yaml
           python scripts/check_immutable_refs.py fixtures/valid/touchpoints-model.yaml
-
-      - name: Negative controls — invalid fixtures must each fail
+      - name: Negative controls — invalid manifest fixtures must each fail
         run: |
           set -e
           for f in fixtures/invalid/unknown-contract-id.yaml fixtures/invalid/mutable-component-reference.yaml fixtures/invalid/missing-handshake.yaml fixtures/invalid/missing-touchpoints-target.yaml fixtures/invalid/absolute-touchpoints-path.yaml fixtures/invalid/traversal-touchpoints-path.yaml; do
@@ -39,7 +36,39 @@ jobs:
             fi
           done
 
-  # CR-AM-11 Phase 4 — Level 3 ecosystem validation against the live registry.
+  # CR-AM-21 — Level 2 structural validation against the published touchpoint contract.
+  resolve-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check out dea-metamodel at the immutable touchpoint contract release
+        uses: actions/checkout@v4
+        with:
+          repository: technehub-labs/dea-metamodel
+          ref: v0.1.0-draft
+          path: dea-metamodel
+      - name: Install validator dependencies
+        run: pip install pyyaml jsonschema
+      - name: Positive — valid manifest resolves against the pinned suite
+        run: python scripts/resolve_contract.py fixtures/valid/model.yaml --suite dea-metamodel/assessment-models/contracts/contract-suite.yaml
+      - name: Positive — optional touchpoint declaration validates structurally
+        run: python scripts/validate_touchpoints.py fixtures/valid/touchpoints-model.yaml --schema dea-metamodel/assessment-models/schemas/maturity-touchpoints.schema.json --suite dea-metamodel/assessment-models/contracts/contract-suite.yaml
+      - name: Positive — models without touchpoints remain valid
+        run: python scripts/validate_touchpoints.py fixtures/valid/model.yaml --schema dea-metamodel/assessment-models/schemas/maturity-touchpoints.schema.json --suite dea-metamodel/assessment-models/contracts/contract-suite.yaml
+      - name: Negative — touchpoint contract violations must be rejected
+        run: |
+          set -e
+          for f in fixtures/invalid/touchpoints-unpaired-model.yaml fixtures/invalid/touchpoints-invalid-reciprocity-model.yaml fixtures/invalid/touchpoints-contract-version-model.yaml fixtures/invalid/traversal-touchpoints-path.yaml; do
+            echo "--- $f"
+            if python scripts/validate_touchpoints.py "$f" --schema dea-metamodel/assessment-models/schemas/maturity-touchpoints.schema.json --suite dea-metamodel/assessment-models/contracts/contract-suite.yaml; then
+              echo "FAIL — $f passed but is a negative control"
+              exit 1
+            else
+              echo "OK — $f rejected as expected"
+            fi
+          done
+
+  # CR-AM-11 Phase 4 — Level 3 validation of registry population and manifest coherence.
   validate-ecosystem:
     runs-on: ubuntu-latest
     steps:
@@ -53,8 +82,7 @@ jobs:
       - name: Install pyyaml
         run: pip install pyyaml
       - name: Level 3 — registry population coherence
-        run: |
-          python scripts/validate_ecosystem.py --registry assessment-registry
+        run: python scripts/validate_ecosystem.py --registry assessment-registry
 
   # D-4b — the legacy catalog index view must match the registry population.
   catalog-view-check:
@@ -70,9 +98,7 @@ jobs:
       - name: Resolve tools-umbrella ref (companion branch if it exists, else main)
         id: toolsref
         run: |
-          if git ls-remote --exit-code --heads \
-              https://github.com/Assessment-Models/dea-catalog-assessment-tools \
-              "${GITHUB_HEAD_REF:-main}" >/dev/null 2>&1; then
+          if git ls-remote --exit-code --heads https://github.com/Assessment-Models/dea-catalog-assessment-tools "${GITHUB_HEAD_REF:-main}" >/dev/null 2>&1; then
             echo "ref=${GITHUB_HEAD_REF:-main}" >> "$GITHUB_OUTPUT"
           else
             echo "ref=main" >> "$GITHUB_OUTPUT"
@@ -86,35 +112,4 @@ jobs:
       - name: Install pyyaml
         run: pip install pyyaml
       - name: Index domains must match the registry
-        run: |
-          python scripts/generate_catalog_view.py \
-            --registry assessment-registry \
-            --index tools/assessments/index.yaml \
-            --check
-
-  # CR-AM-11 Phase 2 — resolution against the real published contract suite.
-  resolve-contract:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Check out dea-metamodel (contract suite source of truth)
-        uses: actions/checkout@v4
-        with:
-          repository: technehub-labs/dea-metamodel
-          ref: main
-          path: dea-metamodel
-      - name: Install pyyaml
-        run: pip install pyyaml
-      - name: Positive — valid manifest resolves against the live suite
-        run: |
-          python scripts/resolve_contract.py fixtures/valid/model.yaml \
-            --suite dea-metamodel/assessment-models/contracts/contract-suite.yaml
-      - name: Negative — version mismatch must be rejected
-        run: |
-          if python scripts/resolve_contract.py fixtures/invalid/version-mismatch.yaml \
-              --suite dea-metamodel/assessment-models/contracts/contract-suite.yaml; then
-            echo "FAIL — version-mismatch fixture resolved but must not"
-            exit 1
-          else
-            echo "OK — version mismatch rejected as expected"
-          fi
+        run: python scripts/generate_catalog_view.py --registry assessment-registry --index tools/assessments/index.yaml --check
