@@ -1,3 +1,22 @@
-# Fixture target proving that the declaration resolves to a repository file.
-# Touchpoint relationship semantics are validated under their dedicated contract.
-id: fixture-touchpoints
+# Structurally valid fixture for the published CR-AM-13 contract.
+id: dea:touchpoints-digital-transformation-v1
+repo_id: digital-transformation-maturity-model
+version: 0.1.0
+status: draft
+metamodel_version: 1.0.0
+contract:
+  id: maturity-touchpoint-contract
+  version: 0.1.0-draft
+  source:
+    organization: technehub-labs
+    repository: dea-metamodel
+    reference: v0.1.0-draft
+touchpoints:
+  - id: tp-fixture-source
+    mirrors: tp-fixture-peer
+    peer_touchpoint_id: tp-fixture-peer
+    peer_asset: dea:maturity-peer
+    peer_repo: maturity-model-peer
+    direction: feeds
+    mapping_type: feeds
+    reciprocity: mirrors-tp-fixture-peer

@@ -7,15 +7,16 @@ This repository owns **no assessment model content**. It provides the validation
 | Level | Name | Where it runs | What it checks |
 |---|---|---|---|
 | 1 | Local model CI | Each model repository | Syntax, schema validation, reference integrity, internal consistency, version consistency, examples, tests |
-| 2 | Contract conformance CI | Each model repository, against a pinned dea-metamodel release | The declared contract handshake (§15) resolves and the model validates against that contract version |
+| 2 | Contract conformance CI | Each model repository, against pinned contract/schema and validator sources | Manifest and handshake conformance, immutable references, touchpoint structural conformance and contract-version resolution |
 | 3 | Ecosystem CI | This repo + [assessment-registry](https://github.com/Assessment-Models/assessment-registry) | Registry integrity, reference resolution, contract/version compatibility, component dependencies, cross-model mappings, duplicate identifiers (§13.1) |
 
 ## Phase 1 scope (current)
 
 - `schemas/model-manifest.schema.json` — the root `model.yaml` manifest contract (§22): identity, version, contract handshake, components, dependencies, compatibility (§15/§17), and typed optional declarations for separately governed artifacts such as `touchpoints.yaml`.
-- `scripts/validate_handshake.py` — Level 2 basic: validate `model.yaml` against the manifest schema, verify the handshake names a known contract family (Annex A inventory), and validate that an optional touchpoint declaration is a safe repository-relative YAML path to an existing file. Touchpoint record semantics remain governed by the dedicated touchpoint contract and ecosystem validation.
+- `scripts/validate_handshake.py` — Level 2 basic: validate `model.yaml` against the manifest schema, verify the handshake names a known contract family (Annex A inventory), and validate that an optional touchpoint declaration is a safe repository-relative YAML path to an existing file.
+- `scripts/validate_touchpoints.py` — Level 2 structural: validate a declared touchpoint artifact against the schema from the caller's pinned `dea-metamodel-ref`, resolve its contract-family/version pin against the same pinned suite, and confirm `repo_id` matches the root model identity. Models without a declaration and without a conventional `touchpoints.yaml` artifact are explicitly skipped and remain valid; an existing `touchpoints.yaml` must be declared in `model.yaml`.
 - `scripts/check_immutable_refs.py` — reusable guard: every external reference in a manifest (components, dependencies) must be immutable (tag `vX.Y.Z`, commit SHA, or digest — never `main`/`latest`).
-- `fixtures/` — positive + negative controls proving the validators can both pass and fail.
+- `fixtures/` and `tests/` — positive and negative controls for manifest/path and touchpoint structural validation.
 - Self-test CI running the validators against the fixtures on every PR.
 
 ## Phase 2 additions (current)
@@ -26,20 +27,25 @@ This repository owns **no assessment model content**. It provides the validation
   ```yaml
   jobs:
     contract-conformance:
-      uses: Assessment-Models/assessment-ci/.github/workflows/contract-conformance.yml@main
+      uses: Assessment-Models/assessment-ci/.github/workflows/contract-conformance.yml@<immutable-sha>
       with:
-        dea-metamodel-ref: v1.0.0   # immutable tag or SHA — never main/latest
+        dea-metamodel-ref: v0.1.0-draft   # immutable contract/schema release
+        assessment-ci-ref: <40-character-sha> # optional; required to enable new touchpoint validation
         manifest-path: model.yaml   # optional
   ```
 
-  It runs the full Level 2 chain: manifest schema + handshake shape, immutable-reference guard, and resolution against the contract suite at the caller's pin. The `dea-metamodel-ref` input is guarded — mutable refs fail the job.
-- Self-test CI resolves the fixtures against the **live** suite on `dea-metamodel@main` (positive + version-mismatch negative).
+  It runs the full Level 2 chain: manifest schema + handshake shape, immutable-reference guard, root handshake resolution, and touchpoint structural validation against the schema and suite at the caller's pinned `dea-metamodel-ref`. The `dea-metamodel-ref` is always guarded. The optional `assessment-ci-ref` is also guarded when supplied; callers that supply a validator commit containing `validate_touchpoints.py` enable the new structural check. Existing callers that omit it retain the legacy pinned validator path until they are migrated.
+- Self-test CI resolves the fixtures against the immutable `dea-metamodel@v0.1.0-draft` suite, including positive and negative touchpoint structural cases.
 
 ## Phase 4 additions (current)
 
 - `scripts/validate_ecosystem.py` — Level 3 full: validates the registry's live population — immutable release refs, dependency ids resolve to registered assets, and manifest coherence (each asset's `model.yaml` at its pinned release must agree with its registration record on id, type, version, and contract handshake). Assets without a `model.yaml` (legacy catalogs/umbrellas) are reported as informational.
 - `validate-ecosystem` self-test job — checks out `Assessment-Models/assessment-registry@main` and runs Level 3 validation against the live population on every PR.
 - Cross-repo fan-out stays `workflow_dispatch`-only until the org-level dispatch credential exists (Phase 1 prerequisite, §13 note).
+
+## Next Level 3 increment
+
+Issue #9 governs semantic validation against registry-pinned model releases: peer identity and touchpoint resolution, reciprocal mirror/endpoint checks, and criterion mapping resolution. Level 2 structural validation does not establish these properties.
 
 ## Nightly ecosystem health (M-5)
 

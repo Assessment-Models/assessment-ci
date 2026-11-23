@@ -1,0 +1,16 @@
+id: dea:touchpoints-digital-transformation-v1
+repo_id: digital-transformation-maturity-model
+version: 0.1.0
+status: draft
+contract:
+  id: maturity-touchpoint-contract
+  version: 0.1.0-draft
+touchpoints:
+  - id: tp-fixture-source
+    mirrors: tp-fixture-peer
+    peer_touchpoint_id: tp-fixture-peer
+    peer_asset: dea:maturity-peer
+    peer_repo: maturity-model-peer
+    direction: feeds
+    mapping_type: feeds
+    reciprocity: required

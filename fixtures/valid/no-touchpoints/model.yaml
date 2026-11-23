@@ -1,0 +1,28 @@
+# Positive control: a conforming manifest that MUST pass both validators.
+id: digital-transformation-maturity-model
+type: maturity-model
+name: Digital Transformation Maturity Model
+description: Phase 4 first-model candidate (CR-AM-11 section 30).
+version: 1.0.0
+conformance:
+  contract:
+    id: opendea-assessment-metamodel
+  source:
+    organization: technehub-labs
+    repository: dea-metamodel
+  version: "1.0"
+components:
+  - id: digital-culture
+    type: sub-dimension
+    kind: import
+    source:
+      repository: Assessment-Models/maturity-components
+    version: 1.2.0
+    reference: v1.2.0
+dependencies:
+  - id: operations-maturity-model
+    reference: 0123456789abcdef0123456789abcdef01234567
+compatibility:
+  metamodel:
+    minimum: 1.0.0
+    maximum: "<2.0.0"

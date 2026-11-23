@@ -18,6 +18,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install validator dependencies
         run: pip install pyyaml jsonschema
+      - name: Run validator unit tests
+        run: python -m unittest discover -s tests -v
 
       - name: Positive control — valid manifest passes both validators
         run: |
@@ -101,10 +103,10 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: technehub-labs/dea-metamodel
-          ref: main
+          ref: v0.1.0-draft
           path: dea-metamodel
-      - name: Install pyyaml
-        run: pip install pyyaml
+      - name: Install pyyaml + jsonschema
+        run: pip install pyyaml jsonschema
       - name: Positive — valid manifest resolves against the live suite
         run: |
           python scripts/resolve_contract.py fixtures/valid/model.yaml \
@@ -118,3 +120,20 @@ jobs:
           else
             echo "OK — version mismatch rejected as expected"
           fi
+
+      - name: Positive — valid touchpoint declaration validates structurally
+        run: python scripts/validate_touchpoints.py fixtures/valid/touchpoints-model.yaml --schema dea-metamodel/assessment-models/schemas/maturity-touchpoints.schema.json --suite dea-metamodel/assessment-models/contracts/contract-suite.yaml
+      - name: Positive — models without touchpoints remain valid
+        run: python scripts/validate_touchpoints.py fixtures/valid/no-touchpoints/model.yaml --schema dea-metamodel/assessment-models/schemas/maturity-touchpoints.schema.json --suite dea-metamodel/assessment-models/contracts/contract-suite.yaml
+      - name: Negative — touchpoint contract violations must be rejected
+        run: |
+          set -e
+          for f in fixtures/invalid/touchpoints-unpaired-model.yaml fixtures/invalid/touchpoints-invalid-reciprocity-model.yaml fixtures/invalid/touchpoints-contract-version-model.yaml fixtures/invalid/traversal-touchpoints-path.yaml; do
+            echo "--- $f"
+            if python scripts/validate_touchpoints.py "$f" --schema dea-metamodel/assessment-models/schemas/maturity-touchpoints.schema.json --suite dea-metamodel/assessment-models/contracts/contract-suite.yaml; then
+              echo "FAIL — $f passed but is a negative control"
+              exit 1
+            else
+              echo "OK — $f rejected as expected"
+            fi
+          done

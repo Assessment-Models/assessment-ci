@@ -1,5 +1,20 @@
 # Changelog
 
+## [Unreleased] — CR-AM-21: Level 2 touchpoint structural conformance
+
+### Added
+- `scripts/validate_touchpoints.py` validates each declared touchpoint artifact against the schema and contract suite supplied by the caller's immutable dea-metamodel reference.
+- Level 2 verifies the touchpoint contract family/version pin and confirms the declaration's `repo_id` matches the root model identity.
+- Positive and negative fixtures and unit tests cover optional declarations, valid records, incomplete mirror pairs, invalid reciprocity vocabulary and contract-version mismatch.
+- The reusable Level 2 workflow invokes touchpoint structural validation when the caller supplies an immutable `assessment-ci-ref` containing the new validator. Existing callers that omit this optional input retain the legacy pinned validator baseline during the staged consumer migration.
+
+### Preserved
+- Touchpoint declarations remain optional for models without a touchpoint artifact. If the conventional root `touchpoints.yaml` exists, `model.yaml` must declare it; this prevents silent validation bypass.
+- Existing model relationships and criterion mappings are not modified.
+- Structural validation does not claim peer existence, criterion resolution or reciprocal endpoint conformance; those remain Level 3 responsibilities under issue #9.
+
+# Changelog
+
 ## [Unreleased] — Immutable validator source pin
 
 ### Changed
