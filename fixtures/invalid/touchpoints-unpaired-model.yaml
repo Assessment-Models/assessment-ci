@@ -1,0 +1,10 @@
+id: digital-transformation-maturity-model
+type: maturity-model
+name: Digital Transformation Maturity Model
+version: 1.0.0
+conformance:
+  contract: {id: opendea-assessment-metamodel}
+  source: {organization: technehub-labs, repository: dea-metamodel}
+  version: "1.0"
+touchpoints:
+  declaration: touchpoints-unpaired.yaml
