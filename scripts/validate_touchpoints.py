@@ -36,6 +36,11 @@ def validate_manifest_touchpoints(
 
     declaration_block = manifest.get("touchpoints")
     if declaration_block is None:
+        conventional_artifact = manifest_path.resolve().parent / "touchpoints.yaml"
+        if conventional_artifact.is_file():
+            return [
+                "touchpoints.yaml exists but model.yaml does not declare touchpoints.declaration"
+            ], False
         return [], True
     if not isinstance(declaration_block, dict):
         return ["touchpoints must be an object"], False
